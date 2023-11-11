@@ -2,7 +2,7 @@
 title: "team_proposal"
 author: "Wenyu Zhang"
 date: "2023-11-11"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -10,10 +10,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Group Members:
-Wenyu Zhang (wz2675)
-Wenwen Li (wl2926)
-Siyan Wen (sw3866)
-Linshen Cai (lc3807)
+* Wenyu Zhang (wz2675)
+* Wenwen Li (wl2926)
+* Siyan Wen (sw3866)
+* Linshen Cai (lc3807)
 
 # Title:
 Evaluation of Wine from Multiple Perspectives
