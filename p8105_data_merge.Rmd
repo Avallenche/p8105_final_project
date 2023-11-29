@@ -17,7 +17,7 @@ sparkling_df <- read.csv("data/Sparkling.csv")
 varieties_df<- read.csv("data/varieties.csv")
 
 # Merge Red with Rose
-
+merged_df_1<-merge(red_df, rose_df, by = intersect(names(red_df), names(rose_df)), all.x = TRUE )
 # Merge the result with White
 merged_df_2 <- merge(merged_df_1, white_df, by = intersect(names(merged_df_1), names(white_df)), all.x = TRUE)
 
