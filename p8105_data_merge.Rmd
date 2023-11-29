@@ -20,5 +20,5 @@ wine_rating =
   janitor::clean_names() |> 
   mutate(categories = str_extract(categories, "[A-Z][a-z]+")) |> 
   select(-variety)
-write_csv(wine_rating, file = "./data/wine_rating.csv")
+write_csv(wine_rating, file = "wine_rating.csv")
 ```
