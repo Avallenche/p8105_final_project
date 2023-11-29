@@ -1,0 +1,33 @@
+---
+title: "p8105_final_wl2926"
+writer: "Wenwen Li"
+output: github_document
+date: "2023-10-18"
+---
+```{r}
+library(tidyverse)
+```
+
+## Clean and merge the data
+```{r}
+red_df <- read.csv("data/Red.csv")
+rose_df <- read.csv("data/Rose.csv")
+white_df <- read.csv("data/White.csv")
+sparkling_df <- read.csv("data/Sparkling.csv")
+varieties_df<- read.csv("data/varieties.csv")
+
+# Merge Red with Rose
+
+# Merge the result with White
+merged_df_2 <- merge(merged_df_1, white_df, by = intersect(names(merged_df_1), names(white_df)), all.x = TRUE)
+
+# Finally, merge the result with Sparkling
+final_merged_df <- merge(merged_df_2, sparkling_df, by = intersect(names(merged_df_2), names(sparkling_df)), all.x = TRUE)
+
+head(final_merged_df)
+write.csv(final_merged_df, "final_merged_data.csv", row.names = FALSE)
+# Assuming final_merged_df is your final merged dataset
+final_merged_df$Variety <- NA
+write.csv(final_merged_df, "updated_final_merged_data.csv", row.names = FALSE)
+
+```
