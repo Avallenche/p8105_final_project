@@ -161,38 +161,37 @@ price_winery=
 
 ### Distribution for Top 10 Winery
 ```{r}
-price_winery_dis=
-  wine_rating |>
-  group_by(country,region,winery)|>
-  mutate(avg_by_winery = mean(price)) |>
-  filter(!is.na(avg_by_winery))|>
-  select(country,region,winery,price,avg_by_winery)|>
+price_winery_dis <- wine_rating %>%
+  group_by(country, region, winery) %>%
+  mutate(avg_by_winery = mean(price)) %>%
+  filter(!is.na(avg_by_winery)) %>%
+  select(country, region, winery, price, avg_by_winery) %>%
   arrange(desc(avg_by_winery))
 
+top_10_wineries <- price_winery_dis %>%
+  group_by(avg_by_winery) %>%
+  nest() %>%
+  arrange(desc(avg_by_winery)) %>%
+  head(10) %>%
+  unnest(cols = data)
 
-top_10_wineries <- price_winery_dis |>
-  group_by(avg_by_winery) |>
-  nest() |>
-  arrange(desc(avg_by_winery)) |>
-  head(10) |>
-  unnest(cols = data) 
-
-# Create a Plotly boxplot
+# Create a Plotly boxplot with color-coded markers by region
 boxplot_plotly <- plot_ly(
   data = top_10_wineries,
   type = "box",
   x = ~winery,
   y = ~price,
-  marker = list(color = "blue")
-) 
+  color = ~region,   # Color by region
+  colors = "Set3"    # Choose a color scale (Set3 provides clear distinctions)
+)
 
 # Customize layout
-boxplot_plotly <- boxplot_plotly |>
+boxplot_plotly <- boxplot_plotly %>%
   layout(
     title = "Price Distribution for Top 10 Wineries",
     xaxis = list(title = "Winery"),
     yaxis = list(title = "Price"),
-    showlegend = FALSE
+    showlegend = TRUE   # Display legend for region colors
   )
 
 # Display the Plotly plot
