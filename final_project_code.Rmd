@@ -76,6 +76,8 @@ fig_country_all <-
 fig_country_all
 ```
 
+This world map visualizes average wine prices by country, offering a overview of the global wine market from the dataset. The data reflects average wine prices across all the different countries in the dataset. Each country is shaded according to its average wine price, with darker shades indicating lower average prices, while lighter shades represent higher prices. Notably, the United Kingdom stands out with the lightest shades, signifying the highest average wine price on the map, while Mexico is represented with the darkest shades, indicating the lowest average price.
+
 ### World Map of The 10 Most Expensive Country
 ```{r}
 price_country <- 
@@ -113,6 +115,8 @@ fig_country_10map <-
 fig_country_10map
 ```
 
+This map visually presents the top 10 countries with the highest average wine prices. The countries are ranked based on their average wine prices, with darker shades indicating lower prices. Each country is labeled with its rank, name, and the corresponding average price in US dollars. Based on this map, the top three most expensive countries are the UK, France, and the US.
+
 ## Wine Price by Region
 ```{r}
 price_region=
@@ -148,6 +152,8 @@ fig_region10 <-
 
 fig_region10
 ```
+
+This bar chart displays the top 10 regions with the highest average wine prices. Each bar on the x-axis represents a region, sorted in descending order of average price, and its length corresponds to the average wine price on the y-axis. Bars are color-coded by countries, and the legend enhances context by identifying them. France prominently leads the list of the most expensive areas, with eight of the top 10 regions located in the it. 
 
 ## Wine Price by Winery
 ```{r}
@@ -198,34 +204,7 @@ boxplot_plotly <- boxplot_plotly %>%
 boxplot_plotly
 ```
 
-## Wine Price Distribution
-```{r}
-filtered_price <- 
-  wine_rating |>
-  select(price)|>
-  filter(!is.na(price), price > 0)
-
-summary(filtered_price)
-```
-
-### Log-Transformed Price Distribution
-```{r}
-histogram_plotly_log <- plot_ly(
-  data = filtered_price,
-  type = "histogram",
-  x = ~log(price),
-  nbinsx = 20,  # Adjust the number of bins as needed
-  marker = list(color = "skyblue")
-)
-
-histogram_plotly_log <- histogram_plotly_log |>
-  layout(
-    title = "Log-Transformed Price Distribution",
-    xaxis = list(title = "Log(Price)"),
-    yaxis = list(title = "Frequency")
-  )
-histogram_plotly_log
-```
+This boxplot illustrates the price distribution of the top 10 wineries, with each box color-coded by region. Each box represents a winery, featuring a median line indicating the central price, box bounds denoting the interquartile range, and whiskers showing the price spread. However, some wineries appear as short lines, which might be due to limited data points or homogeneous prices in these wineries.
 
 ## Wine Price in the United States
 ```{r}
@@ -259,6 +238,8 @@ histogram_plotly_us <- histogram_plotly_us |>
 histogram_plotly_us
 ```
 
+This histogram illustrates the distribution of wine prices in the United States, with a specific focus on wines priced under $200. The x-axis represents the price range, while the y-axis denotes the frequency of wines falling within each price category. This visualization provides a quick overview of the frequency distribution of wine prices in the United States under the specified threshold. Notably, the histogram reveals that the majority of wines in the United States are concentrated in the price range of 0 to 19.99 dollars.
+
 
 # Allen's Part
 
@@ -273,6 +254,10 @@ ggplotly(ggplot_rp_tf)
 ## Fitting linear model to rating, price, and year(residual plot)
 ```{r}
 lm_rp = lm(rating ~ log(price) + year, data = wine_rating)
+
+broom::tidy(lm_rp) |> 
+  knitr::kable(digits = 3)
+
 resid_rp = wine_rating |> 
   modelr::add_residuals(lm_rp) |> 
   ggplot(aes(x = log(price), y = resid)) + geom_point()
@@ -296,6 +281,14 @@ ggplotly(bootstrap_rp)
 # Wenwen's Part
 ## Wine ratings Visualizations.
 ```{r}
+# Assuming your summarized data is stored in a variable named wine_summary
+wine_summary <- wine_rating %>%
+  group_by(country, year, categories) %>%
+  filter(number_of_ratings > 2000) %>%
+  summarise(mean_rating = mean(rating),
+            sd_rating = sd(rating),
+            n = n()) %>%
+  ungroup()
 #remove missing values and any duplicates
 wine_rating = 
   wine_rating |>
@@ -309,15 +302,16 @@ wine_rating =
 
         
 ## Relationship between Wine prices and rating for different categories.
+
 ```{r}
 # Plotly scatter plot with loess smoothing
 plot_ly(wine_rating, x = ~price, y = ~rating, type = 'scatter', mode = 'markers', color = ~categories) %>%
   layout(title = "Average wine price by category and production region",
          xaxis = list(title = "Price"),
          yaxis = list(title = "Rating"))
+
 ```
-        
-This scatterplot with loess smoothing generally indicates that higher priced wines have higher ratings for all the four categories of wines.   
+This scatter plot shows the relationship between wine prices and ratings across different categories. Points are colored by category, including red, rosé, sparkling, and white wines. The graph suggests that there is a wide range of prices within each wine category, and there doesn't appear strong correlation between price and rating. Some high-rated wines are available at moderate prices, while there are also expensive wines with lower ratings. However, we can see that for the red wine, we could see the trend that the red wine with higher price have higher rating. 
 
 ## Within countries, highest rating regions  
 ```{r}
@@ -337,9 +331,11 @@ plot_ly(wine_rating_summary, x = ~reorder(region, -mean_rating), y = ~mean_ratin
   layout(title = "Average wine rating by region (Within countries)",
          xaxis = list(title = "Region"),
          yaxis = list(title = "Mean Rating"))
+
 ```
             
-Italy by far tops the list of the countries with the highest rated wine producing regions. Out of the top 27 regions in terms of mean-rating, almost half (13) of the wine producing regions are from Italy. The graph only shows the regions from which their wines received more than 2000 ratings.     
+The graph only shows the regions from which their wines received more than 2000 ratings.
+This bar chart compares the average wine rating by region within various countries. Regions are ordered by their mean rating. This visualization indicates that certain regions consistently produce higher-rated wines, but it also reflects the diversity within countries. For instance, wines from regions like Napa Valley, Barolo, and Bordeaux may have higher average ratings compared to other regions. Italy by far tops the list of the countries with the highest rated wine producing regions. Out of the top 27 regions in terms of mean-rating, almost half (13) of the wine producing regions are from Italy.
 
 ## Rating analysis by category in a specific region (e.g., Napa Valley):
 
@@ -368,13 +364,11 @@ fig <- plot_ly(x = colnames(rating_matrix),
 
 fig
 ```
-          
-Narrowing down to the ratings of individual regions and the wines that they produce, this graph compares the mean-ratings of the wines from California, Napa County and Napa Valley. From the graph, the Red wines from Napa Valley, had the highest mean-ratings compared to the other two, just as the White category of wines from Napa County had the highest mean rating. Of the three regions considered, only California produced the Rose category of wines, and incidentally had the lowest mean-rating of the categories.      
+         
+Narrowing down to the ratings of individual regions and the wines that they produce, this heatmap shows the average ratings of different wine categories specifically within Napa Valley, Napa County, and California as a whole. The color intensity reflects the mean rating.For most of us, the region that we are familiar with should be Napa County, Napa Valley. From the graph, the Red wines from Napa Valley, had the highest mean-ratings compared to the other two, just as the White category of wines from Napa County had the highest mean rating. For the white wine, the production from Napa Valley had the highest mean-ratings. 
 
-## Most Welcoming Wine Valleys   
-
+## Most Welcoming Wine Valleys  
 ```{r}
-
 # Filter data if needed
 welcoming_valleys_data <- wine_rating |>
   filter(number_of_ratings > 2000) |>
@@ -383,7 +377,7 @@ welcoming_valleys_data <- wine_rating |>
             number_of_ratings = number_of_ratings,
             mean_price = mean(price)) |>
   ungroup() |>
-  filter(mean_rating > 4.3)
+  filter(mean_rating > 4.3, mean_price > 0)  # Ensures that mean_price is greater than 0
 
 # Create a Plotly Bubble Chart
 fig <- plot_ly(data = welcoming_valleys_data, 
@@ -395,15 +389,17 @@ fig <- plot_ly(data = welcoming_valleys_data,
                type = 'scatter', 
                mode = 'markers', 
                marker = list(sizemode = 'diameter', sizeref = 0.7, opacity = 0.4)) %>%
-  layout(title = 'Most Welcoming Wine Valleys by Wine Category',
-         xaxis = list(title = 'Mean Price'),
-         yaxis = list(title = 'Mean Rating'),
-         colorway = list('region'))
+  layout(
+  title = 'Most Welcoming Wine Valleys by Wine Category',
+  xaxis = list(title = 'Mean Price', range = c(0, max(welcoming_valleys_data$mean_price))),
+  yaxis = list(title = 'Mean Rating')
+)
 
+# Print the figure
 fig
 ```
 
-This bubble plot shows the relationship between the mean-prices and mean-ratings of wines, for only the wines that had more than 2000 ratings, and whose mean-rating was greater than 4.3 all grouped by the wine category. The sizes of the bubbles indicate the number of ratings, while the colors indicate the regions. From the plot, only the wine category of wine makes this cut. Again, only seven wine producing regions make this cut, four of them are from Italy.     
+This bubble plot shows the relationship between the mean-prices and mean-ratings of wines, for only the wines that had more than 2000 ratings, and whose mean-rating was greater than 4.3 all grouped by the wine category. Regions with larger bubbles and higher placements on the Y-axis (mean rating) could be interpreted as more "welcoming" due to their combination of high ratings and a significant number of ratings, suggesting popular approval.The mean price on the X-axis gives an additional dimension, indicating if the quality comes with a higher cost. The region represented by the large, orange bubble (represents 'Bolgheri Superiore' region) seems to be the most "welcoming," as it has a high mean rating and a significant number of reviews. In the plot, there is a wide range of mean prices, but a cluster of regions has mean ratings in the narrow range of approximately 4.3 to 4.6.Also,not all high-rated wines are expensive, and not all expensive wines are highly rated, indicating that price is not the sole determinant of quality as perceived by raters.
 
 
 # Ultraman's Part
